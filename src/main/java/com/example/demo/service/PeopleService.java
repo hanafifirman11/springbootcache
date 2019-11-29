@@ -16,7 +16,6 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@CacheConfig(cacheNames = "peopleCache")
 public class PeopleService {
 
     @Autowired
@@ -50,6 +49,7 @@ public class PeopleService {
 
     @Cacheable(cacheNames = "findByIdCache")
     public PeopleDto findById(Long id) {
+        log.info("Connecting to DB...");
         Optional<People> findPeople = peopleRepository.findById(id);
         if(findPeople.isPresent()) {
             return peopleMapper.peopleToPeopleDto(findPeople.get());
@@ -63,8 +63,9 @@ public class PeopleService {
     CacheManager cacheManager;
 
     public void flushCache() {
-        cacheManager.getCacheNames().stream()
-                .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
-        log.info("Flushing all cache...");
+        for (String cacheName : cacheManager.getCacheNames()) {
+            cacheManager.getCache(cacheName).clear();
+            log.info("Flushing cache with name: " + cacheName);
+        }
     }
 }
